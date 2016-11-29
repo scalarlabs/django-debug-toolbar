@@ -98,7 +98,11 @@ class NormalCursorWrapper(object):
     def _record(self, method, sql, params):
         start_time = time()
         try:
-            return method(sql, params)
+            r = method(sql, params)
+            if str.startswith(sql, 'SELECT ') and self.cursor.rowcount > 0:
+                self.cursor.fetchall()
+                self.cursor.scroll(0, mode='absolute')
+            return r
         finally:
             stop_time = time()
             duration = (stop_time - start_time) * 1000
